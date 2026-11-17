@@ -1,0 +1,38 @@
+name: Mirror daily checkpoints
+
+# PP builds yesterday's checkpoint from 00:15 UTC; mirror after that, and again
+# later in the day in case the first pass ran before it was published.
+on:
+  schedule:
+    - cron: '47 1 * * *'
+    - cron: '47 13 * * *'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Days back to fetch
+        default: '7'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch published checkpoints and checkpoint keys
+        env:
+          DAYS: ${{ github.event.inputs.days || '7' }}
+        run: ./scripts/mirror.sh
+      - name: Commit new files
+        if: always()
+        run: |
+          git add checkpoints keys
+          if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
+          git -c user.name='github-actions[bot]' -c user.email='41898299+github-actions[bot]@users.noreply.github.com' \
+            commit -m "Mirror checkpoints $(date -u +%F)"
+          git push
