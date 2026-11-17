@@ -1,0 +1,7 @@
+{
+  "alg": "ed25519",
+  "key_id": "pp-checkpoint-1",
+  "public_key_b64": "VSjnKGCNDvK/kwTAZ40NLORwbjPhnCy6IwdqZ8iTF98=",
+  "purpose": "receipt_checkpoint",
+  "status": "active"
+}
